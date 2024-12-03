@@ -25,6 +25,7 @@ endif
 ifeq ($(CONFIG_MATTER_EN),y)
 	@make -C $(MATTER_BUILDDIR)/make all
 endif
+	@make -C aws_iotshd all
 #*****************************************************************************#
 #              CLEAN GENERATED FILES                                          #
 #*****************************************************************************#
@@ -37,4 +38,5 @@ clean:
 ifeq ($(CONFIG_MATTER_EN),y)
 	@make -C $(MATTER_BUILDDIR)/make clean
 endif
+	@make -C aws_iotshd clean
 -include $(DEPS)

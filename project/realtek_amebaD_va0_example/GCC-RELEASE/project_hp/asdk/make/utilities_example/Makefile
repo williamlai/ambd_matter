@@ -43,6 +43,8 @@ IFLAGS += -I$(BASEDIR)/component/common/drivers/usb/device_new/cdc_acm
 IFLAGS += -I$(BASEDIR)/component/common/drivers/usb/device_new/hid
 endif
 
+IFLAGS += -I$(BASEDIR)/component/common/application/aws_iotshd
+
 .PHONY: all clean
 
 #*****************************************************************************#
@@ -223,6 +225,8 @@ endif
 # CSRC += $(DIR)/azure/pnp/rtk_component/pnp_system.c
 # CSRC += $(DIR)/azure/pnp/rtk_component/pnp_video.c
 # CSRC += $(DIR)/azure/pnp/rtk_component/pnp_wireless.c
+
+CSRC += $(DIR)/aws_iotshd/example_aws_iotshd.c
 #*****************************************************************************#
 #                               Object FILE LIST                              #
 #*****************************************************************************#
