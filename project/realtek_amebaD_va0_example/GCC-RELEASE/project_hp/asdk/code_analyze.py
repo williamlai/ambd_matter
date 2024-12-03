@@ -7,103 +7,104 @@ import re
 import shutil
 
 def obj_list_gen():
-	if os.path.exists('obj_list.map'):
-		os.remove('obj_list.map')
-	file=open('obj_list.map', 'w')
+    if os.path.exists('obj_list.map'):
+        os.remove('obj_list.map')
+    file = open('obj_list.map', 'w')
 
-	parse_file=open('image/ram_size.txt', 'r')
-	all_lines = parse_file.readlines()
+    parse_file = open('image/ram_size.txt', 'r')
+    all_lines = parse_file.readlines()
 
-	for line in all_lines:
-		item = filter(None, line.strip().split('\t'))
-		num = len(item)
-		#print item
-		#print num
+    for line in all_lines:
+        item = list(filter(None, line.strip().split('\t')))
+        num = len(item)
+        #print(item)
+        #print(num)
 
-		line_strip = (line.strip())
-		item_split_component=line_strip.split('component')
-	
-		found=line.find('component')
-		if found > 0:
-			print >> file, 'component' + item_split_component[1]
-		else:
-			if num == 1:
-				print >> file, item[0]
+        line_strip = (line.strip())
+        item_split_component = line_strip.split('component')
 
-	parse_file.close()
-	file.close()
-	return
+        found = line.find('component')
+        if found > 0:
+            print('component' + item_split_component[1], file=file)
+        else:
+            if num == 1:
+                print(item[0], file=file)
+
+    parse_file.close()
+    file.close()
+    return
 
 
 def parse_text_map(str):
-	if os.path.exists('parse_text.map'):
-		os.remove('parse_text.map')
-	file=open('parse_text.map', 'w')
+    if os.path.exists('parse_text.map'):
+        os.remove('parse_text.map')
+    file = open('parse_text.map', 'w')
 
-	if os.path.exists('temp_text.map'):
-		os.remove('temp_text.map')
-	temp_file=open('temp_text.map', 'w')
-	
-	text_file=open('image/text_image2_ns.map', 'r')
-	
-	text_all_lines = text_file.readlines()
-		
-	count=0
-	temp_count=1;
-	
-	for text_line in text_all_lines:
-		item = filter(None, text_line.strip().split(' '))
-		num = len(item)
+    if os.path.exists('temp_text.map'):
+        os.remove('temp_text.map')
+    temp_file = open('temp_text.map', 'w')
 
-		line_strip = (text_line.strip())
-		item_split_bank=line_strip.split(' ')
-		
-		found_bss=text_line.find('.bss.')
-		found_bdram=text_line.find('.bdsram.')		
-		found_fdram=text_line.find('.bfsram.')			
-		
-		if found_bss>0:
-			if num==1:
-				temp_count=count+1
-		else:
-			if (count!=temp_count) and (found_bdram<0) and (found_fdram<0):
-				temp_file.write(text_line)
+    text_file = open('image/text_image2_ns.map', 'r')
 
-		count=count+1
-	
-	temp_file.close()
-	
-	parse_file=open('temp_text.map', 'r')
-	parse_file = 'temp_text.map'
-	
-	if (str=='flash'):
-		command = "grep" + " 0x0e0 " +  parse_file + " | grep -e '\.o$' -e '\.o)$'";
-	else:
-		command = "grep -i" + " -e 0x100 -e 0x101 " +  parse_file + " | grep -e '\.o)$' -e '\.o$'";
-	
-	proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
-	
-	for line in proc.stdout:
-		items = filter(None, line.strip().split(' '))
-		
-		num = len(items) 
-		if num == 3 :
-			if (str=='flash'):
-				if (items[0].find("0x0e")==0):
-					print >> file, items[0] + " " + items[1] + " " + items[2] 
-			else:
-				if (items[0].find("0x100")==0 or items[0].find("0x101")==0):
-					print >> file, items[0] + " " + items[1] + " " + items[2]
-		if num == 4 : 
-			if (str=='flash'):
-				if (items[1].find("0x0e")==0 and items[0].find(".debug")!=0):
-					print >> file, items[1] + " " + items[2] + " " + items[3]
-			else:
-				if ((items[1].find("0x100")==0 or items[1].find("0x101")==0) and items[0].find(".debug")!=0):
-					print >> file, items[1] + " " + items[2] + " " + items[3]
+    text_all_lines = text_file.readlines()
 
-	file.close()
-	return
+    count = 0
+    temp_count = 1
+
+    for text_line in text_all_lines:
+        item = list(filter(None, text_line.strip().split(' ')))
+        num = len(item)
+
+        line_strip = (text_line.strip())
+        item_split_bank = line_strip.split(' ')
+
+        found_bss = text_line.find('.bss.')
+        found_bdram = text_line.find('.bdsram.')
+        found_fdram = text_line.find('.bfsram.')
+
+        if found_bss > 0:
+            if num == 1:
+                temp_count = count + 1
+        else:
+            if (count != temp_count) and (found_bdram < 0) and (found_fdram < 0):
+                temp_file.write(text_line)
+
+        count = count + 1
+
+    temp_file.close()
+
+    parse_file = open('temp_text.map', 'r')
+    parse_file = 'temp_text.map'
+
+    if (str == 'flash'):
+        command = "grep" + " 0x0e0 " + parse_file + " | grep -e '\.o$' -e '\.o)$'"
+    else:
+        command = "grep -i" + " -e 0x100 -e 0x101 " + parse_file + " | grep -e '\.o)$' -e '\.o$'"
+
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+
+    for line in proc.stdout:
+        line = line.decode('utf-8')  # 解碼字節流為字符串
+        items = list(filter(None, line.strip().split(' ')))
+
+        num = len(items)
+        if num == 3:
+            if (str == 'flash'):
+                if (items[0].find("0x0e") == 0):
+                    print(items[0] + " " + items[1] + " " + items[2], file=file)
+            else:
+                if (items[0].find("0x100") == 0 or items[0].find("0x101") == 0):
+                    print(items[0] + " " + items[1] + " " + items[2], file=file)
+        if num == 4:
+            if (str == 'flash'):
+                if (items[1].find("0x0e") == 0 and items[0].find(".debug") != 0):
+                    print(items[1] + " " + items[2] + " " + items[3], file=file)
+            else:
+                if ((items[1].find("0x100") == 0 or items[1].find("0x101") == 0) and items[0].find(".debug") != 0):
+                    print(items[1] + " " + items[2] + " " + items[3], file=file)
+
+    file.close()
+    return
 
 def parse_text_map_2(str):
 	if os.path.exists('parse_text_2.map'):
@@ -122,7 +123,7 @@ def parse_text_map_2(str):
 	proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
 	
 	for line in proc.stdout:
-		items = filter(None, line.strip().split(' '))
+		items = list(filter(None, line.strip().split(' ')))
 		
 		if first == 1 :
 			line_last = line
@@ -130,7 +131,7 @@ def parse_text_map_2(str):
 			first = 0
 			continue
 		
-		items_last = filter(None, line_last.strip().split(' '))
+		items_last = list(filter(None, line_last.strip().split(' ')))
 		
 		if  items[2] == items_last[2] :
 			size = size + int(items[1], 16)
@@ -144,57 +145,57 @@ def parse_text_map_2(str):
 	return
 
 def merge_size_and_objs():
-	if os.path.exists('parse_text_obj_size_1.map'):
-		os.remove('parse_text_obj_size_1.map')
-	file_result=open('parse_text_obj_size_1.map', 'w')
+    if os.path.exists('parse_text_obj_size_1.map'):
+        os.remove('parse_text_obj_size_1.map')
+    file_result = open('parse_text_obj_size_1.map', 'w')
 
-	parse_file = 'obj_list.txt'
-	command = "grep -e '\.o)$' -e '\.o$'" +  parse_file;
-	last_item='none'
-	last_obj_path='none'
-	obj_size=0
-	file_size=0
-	image_size=0
-	
-	proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
-	file=open('parse_text_2.map', 'r')
-	all_lines = file.readlines()
+    parse_file = 'obj_list.txt'
+    command = "grep -e '\.o)$' -e '\.o$' " + parse_file
+    last_item = 'none'
+    last_obj_path = 'none'
+    obj_size = 0
+    file_size = 0
+    image_size = 0
 
-	for line in proc.stdout:
-		items = filter(None, line.strip().split(' '))
-		items_split=os.path.split(items[0])
-		file_size=0
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+    file = open('parse_text_2.map', 'r')
+    all_lines = file.readlines()
 
-		line_strip = (line.strip())
-		items_split_component=line_strip.split('component')
-		items_split_test=line_strip.split('/', line_strip.count('/'))
+    for line in proc.stdout:
+        items = list(filter(None, line.strip().split(' ')))
+        items_split = os.path.split(items[0])
+        file_size = 0
 
-		obj_path=''
-		for num in xrange(17):
-			obj_path += items_split_test[num]+"/"
+        line_strip = (line.strip())
+        items_split_component = line_strip.split('component')
+        items_split_test = line_strip.split('/', line_strip.count('/'))
 
-		if (last_obj_path != obj_path):
-			if (last_obj_path != 'none'):
-				print >> file_result, "Total size hex: " + hex(obj_size) + " dec: %d"%obj_size
-			print >> file_result, "============================================================================================"
-			obj_size=0
-		last_obj_path=obj_path
+        obj_path = ''
+        for num in range(17):
+            obj_path += items_split_test[num] + "/"
 
-		for line in all_lines:
-			item = filter(None, line.strip().split(' '))
-			if items_split[1] == item[1]:
-				file_size=file_size+int(item[0],16)
-		
-		print >> file_result, hex(file_size) + "	" + items_split_component[1]
-		obj_size = obj_size + file_size
-		image_size=image_size+file_size
+        if last_obj_path != obj_path:
+            if last_obj_path != 'none':
+                print("Total size hex: " + hex(obj_size) + " dec: %d" % obj_size, file=file_result)
+            print("============================================================================================", file=file_result)
+            obj_size = 0
+        last_obj_path = obj_path
 
-	print >> file_result, "Total size hex: " + hex(obj_size) + " dec: %d"%obj_size 
-	print >> file_result, "============================================================================================"
-	print >> file_result, "Image size hex: " + hex(image_size) + " dec: %d"%image_size 
-	file_result.close();
-	file.close()
-	return
+        for line in all_lines:
+            item = list(filter(None, line.strip().split(' ')))
+            if items_split[1] == item[1]:
+                file_size = file_size + int(item[0], 16)
+
+        print(hex(file_size) + "    " + items_split_component[1], file=file_result)
+        obj_size = obj_size + file_size
+        image_size = image_size + file_size
+
+    print("Total size hex: " + hex(obj_size) + " dec: %d" % obj_size, file=file_result)
+    print("============================================================================================", file=file_result)
+    print("Image size hex: " + hex(image_size) + " dec: %d" % image_size, file=file_result)
+    file_result.close()
+    file.close()
+    return
 	
 def merge_same_objlist():
 	if os.path.exists('merge_temp.map'):
@@ -210,7 +211,7 @@ def merge_same_objlist():
 	merge_lable=[]
 	
 	for line in all_lines:
-		item = filter(None, line.strip().split(' '))
+		item = list(filter(None, line.strip().split(' ')))
 		num = len(item)
 
 		line_strip = (line.strip())
@@ -223,7 +224,7 @@ def merge_same_objlist():
 	for i in range(len(merge_lable)):
 		module_size = 0
 		for line in all_lines:
-			item = filter(None, line.strip().split(' '))
+			item = list(filter(None, line.strip().split(' ')))
 			num = len(item)
 
 			line_strip = (line.strip())
@@ -239,277 +240,272 @@ def merge_same_objlist():
 	return
 	
 def merge_size_and_objs_2(strx):
-	if (strx=='flash'):
-		des_file='code_size_flash.map'
-	else:
-		des_file='code_size_ram.map'
+    if (strx == 'flash'):
+        des_file = 'code_size_flash.map'
+    else:
+        des_file = 'code_size_ram.map'
 
-	if os.path.exists(des_file):
-		os.remove(des_file)
-	file_result=open(des_file, 'w')
-	
-	merge_same_objlist()
-	file=open('merge_temp.map', 'r')
-	all_lines = file.readlines()
-	
-	# file=open('parse_text_2.map', 'r')
-	# all_lines = file.readlines()
+    if os.path.exists(des_file):
+        os.remove(des_file)
+    file_result = open(des_file, 'w')
 
-	total_size =  0
-	module_size = 0
-	
-	lable=[]
-	
-	for line in all_lines:
-		item = filter(None, line.strip().split(' '))
-		num = len(item)
-		#print item
-		#print num
+    merge_same_objlist()
+    file = open('merge_temp.map', 'r')
+    all_lines = file.readlines()
 
-		line_strip = (line.strip())
-		item_split_bank=line_strip.split(' ')
-		
-		found_a=item_split_bank[1].find('.a')
-		
-		if found_a>0:
-			item_split_bank_a=item_split_bank[1].split('.a')
-			if item_split_bank_a[0] not in lable:
-				lable.append(item_split_bank_a[0])
-			
-	for i in range(len(lable)):		
-		print >> file_result, "================================================================="
-		module_size = 0
-		for line in all_lines:
-			item = filter(None, line.strip().split(' '))
-			num = len(item)
+    total_size = 0
+    module_size = 0
 
-			line_strip = (line.strip())
-			item_split_bank=line_strip.split(' ')
+    lable = []
 
-			found=line.find(lable[i])
+    for line in all_lines:
+        item = list(filter(None, line.strip().split(' ')))
+        num = len(item)
 
-			if (found>0):
-				module_size = module_size + int(item_split_bank[0],16)
-				total_size += int(item_split_bank[0],16)
-				stest = str(int(item_split_bank[0],16))
-				print >> file_result, item_split_bank[0] + "\t\t\t" + stest + "\t\t\t" + item_split_bank[1]
-				
-		print >> file_result, "\n" + "total:"
-		print >> file_result, str(hex(module_size)) + "\t\t\t" + str(module_size) + '\n'		
-	
-	if os.path.exists('sort_temp_file.map'):
-		os.remove('sort_temp_file.map')
-	file_sort_temp=open('sort_temp_file.map', 'w')
-	
-	for line in all_lines:
-		item = filter(None, line.strip().split(' '))
-		line_strip = (line.strip())
-		item_split_bank=line_strip.split(' ')
+        line_strip = (line.strip())
+        item_split_bank = line_strip.split(' ')
 
-		found=line.find('.a')
+        found_a = item_split_bank[1].find('.a')
 
-		if (found<0):
-			stest = str(int(item_split_bank[0],16))
-			print >> file_sort_temp, item_split_bank[0] + " " + stest + " " + item_split_bank[1]
-	file_sort_temp.close()
+        if found_a > 0:
+            item_split_bank_a = item_split_bank[1].split('.a')
+            if item_split_bank_a[0] not in lable:
+                lable.append(item_split_bank_a[0])
 
-	sort_lable_wifi=['wifi_','lwip_netconf', 'wifi_interactive_mode', 'atcmd_sys','atcmd_wifi', 'tcptest', 'wlan_', 'ping_']
-	sort_lable_per=['rtl8721d', 'platform', 'main', 'example_entry', '_api.']
-	sort_lable_shell=['shell', 'log_', 'monitor', 'low_level_io', 'rtl_trace']
-	sort_lable_os=['croutine', 'event_groups', 'list', 'queue', 'tasks', 'timers', 'heap_5', 'port', 'freertos_', 'osdep_', 'device_lock']
-	
-	file_sort_temp_r=open('sort_temp_file.map', 'r')
-	all_lines_sort = file_sort_temp_r.readlines()
+    for i in range(len(lable)):
+        print("=================================================================", file=file_result)
+        module_size = 0
+        for line in all_lines:
+            item = list(filter(None, line.strip().split(' ')))
+            num = len(item)
 
-	array_flag=[0 for i in range(len(all_lines_sort))]
-	
-	temp_flag=0
-	
-	print >> file_result, "================================================================="
-	module_size=0
-	for all_lines_sort_t in all_lines_sort:
-		item = filter(None, all_lines_sort_t.strip().split(' '))
-		num = len(item)
+            line_strip = (line.strip())
+            item_split_bank = line_strip.split(' ')
 
-		line_strip = (all_lines_sort_t.strip())
-		item_split_bank=line_strip.split(' ')
-		temp_flag=0
-		for idxn in sort_lable_wifi:
-			found = item_split_bank[2].find(idxn)
-			if found>=0:
-				temp_flag=1
-				break
-		if (temp_flag==1):
-			if(array_flag[all_lines_sort.index(all_lines_sort_t)]==0):
-				module_size = module_size + int(item_split_bank[0],16)
-				total_size += int(item_split_bank[0],16)
-				stest = str(int(item_split_bank[0],16))
-				print >> file_result, item_split_bank[0] + "\t\t\t" + stest + "\t\t\t" + item_split_bank[2]
-				array_flag[all_lines_sort.index(all_lines_sort_t)]=1
-	if module_size!=0:
-		print >> file_result, "\n" + "total:"
-		print >> file_result, str(hex(module_size)) + "\t\t\t" + str(module_size) + '\n'		
-		print >> file_result, "================================================================="
-	file_sort_temp_r.close()
-	
-	file_sort_temp_r=open('sort_temp_file.map', 'r')
-	all_lines_sort = file_sort_temp_r.readlines()		
-	module_size=0
-	for all_lines_sort_t in all_lines_sort:
-		item = filter(None, all_lines_sort_t.strip().split(' '))
-		num = len(item)
+            found = line.find(lable[i])
 
-		line_strip = (all_lines_sort_t.strip())
-		item_split_bank=line_strip.split(' ')
-		
-		temp_flag=0
-		for idxn in sort_lable_per:
-			found = item_split_bank[2].find(idxn)
-			if found>=0:
-				temp_flag=1
-				break
-		if (temp_flag==1):
-			if(array_flag[all_lines_sort.index(all_lines_sort_t)]==0):
-				module_size = module_size + int(item_split_bank[0],16)
-				total_size += int(item_split_bank[0],16)
-				stest = str(int(item_split_bank[0],16))
-				print >> file_result, item_split_bank[0] + "\t\t\t" + stest + "\t\t\t" + item_split_bank[2]
-				array_flag[all_lines_sort.index(all_lines_sort_t)]=1
-	if module_size!=0:
-		print >> file_result, "\n" + "total:"
-		print >> file_result, str(hex(module_size)) + "\t\t\t" + str(module_size) + '\n'		
-		print >> file_result, "================================================================="
+            if (found > 0):
+                module_size = module_size + int(item_split_bank[0], 16)
+                total_size += int(item_split_bank[0], 16)
+                stest = str(int(item_split_bank[0], 16))
+                print(item_split_bank[0] + "\t\t\t" + stest + "\t\t\t" + item_split_bank[1], file=file_result)
 
-	file_sort_temp_r.close()
-	
-	file_sort_temp_r=open('sort_temp_file.map', 'r')
-	all_lines_sort = file_sort_temp_r.readlines()		
-	module_size=0
-	for all_lines_sort_t in all_lines_sort:
-		item = filter(None, all_lines_sort_t.strip().split(' '))
-		num = len(item)
+        print("\n" + "total:", file=file_result)
+        print(str(hex(module_size)) + "\t\t\t" + str(module_size) + '\n', file=file_result)
 
-		line_strip = (all_lines_sort_t.strip())
-		item_split_bank=line_strip.split(' ')
-		
-		temp_flag=0
-		for idxn in sort_lable_shell:
-			found = item_split_bank[2].find(idxn)
-			if found>=0:
-				temp_flag=1
-				break
-		if (temp_flag==1):
-			if(array_flag[all_lines_sort.index(all_lines_sort_t)]==0):
-				module_size = module_size + int(item_split_bank[0],16)
-				total_size += int(item_split_bank[0],16)
-				stest = str(int(item_split_bank[0],16))
-				print >> file_result, item_split_bank[0] + "\t\t\t" + stest + "\t\t\t" + item_split_bank[2]
-				array_flag[all_lines_sort.index(all_lines_sort_t)]=1
-	if module_size!=0:
-		print >> file_result, "\n" + "total:"
-		print >> file_result, str(hex(module_size)) + "\t\t\t" + str(module_size) + '\n'		
-		print >> file_result, "================================================================="
+    if os.path.exists('sort_temp_file.map'):
+        os.remove('sort_temp_file.map')
+    file_sort_temp = open('sort_temp_file.map', 'w')
 
-	file_sort_temp_r.close()
+    for line in all_lines:
+        item = list(filter(None, line.strip().split(' ')))
+        line_strip = (line.strip())
+        item_split_bank = line_strip.split(' ')
 
-	file_sort_temp_r=open('sort_temp_file.map', 'r')
-	all_lines_sort = file_sort_temp_r.readlines()		
-	module_size=0
-	for all_lines_sort_t in all_lines_sort:
-		item = filter(None, all_lines_sort_t.strip().split(' '))
-		num = len(item)
+        found = line.find('.a')
 
-		line_strip = (all_lines_sort_t.strip())
-		item_split_bank=line_strip.split(' ')
-		
-		temp_flag=0
-		for idxn in sort_lable_os:
-			found = item_split_bank[2].find(idxn)
-			if found>=0:
-				if idxn=='timers':
-					if found==0:
-						temp_flag=1
-						break
-				else:
-					temp_flag=1
-					break
-		if (temp_flag==1):
-			if(array_flag[all_lines_sort.index(all_lines_sort_t)]==0):
-				module_size = module_size + int(item_split_bank[0],16)
-				total_size += int(item_split_bank[0],16)
-				stest = str(int(item_split_bank[0],16))
-				print >> file_result, item_split_bank[0] + "\t\t\t" + stest + "\t\t\t" + item_split_bank[2]
-				array_flag[all_lines_sort.index(all_lines_sort_t)]=1
-	if module_size!=0:
-		print >> file_result, "\n" + "total:"
-		print >> file_result, str(hex(module_size)) + "\t\t\t" + str(module_size) + '\n'		
-		print >> file_result, "================================================================="
+        if (found < 0):
+            stest = str(int(item_split_bank[0], 16))
+            print(item_split_bank[0] + " " + stest + " " + item_split_bank[1], file=file_sort_temp)
+    file_sort_temp.close()
 
-	file_sort_temp_r.close()
-	
-	file_sort_temp_r=open('sort_temp_file.map', 'r')
-	all_lines_sort = file_sort_temp_r.readlines()		
-	module_size=0
-	for all_lines_sort_t in all_lines_sort:
-		item = filter(None, all_lines_sort_t.strip().split(' '))
-		num = len(item)
+    sort_lable_wifi = ['wifi_', 'lwip_netconf', 'wifi_interactive_mode', 'atcmd_sys', 'atcmd_wifi', 'tcptest', 'wlan_', 'ping_']
+    sort_lable_per = ['rtl8721d', 'platform', 'main', 'example_entry', '_api.']
+    sort_lable_shell = ['shell', 'log_', 'monitor', 'low_level_io', 'rtl_trace']
+    sort_lable_os = ['croutine', 'event_groups', 'list', 'queue', 'tasks', 'timers', 'heap_5', 'port', 'freertos_', 'osdep_', 'device_lock']
 
-		line_strip = (all_lines_sort_t.strip())
-		item_split_bank=line_strip.split(' ')
-		
-		temp_flag=0
-		for idxn in sort_lable_per:
-			found = item_split_bank[2].find(idxn)
-			if found>=0:
-				temp_flag=1
-				break
-		for idxn in sort_lable_wifi:
-			found = item_split_bank[2].find(idxn)
-			if found>=0:
-				temp_flag=1
-				break
-				
-		for idxn in sort_lable_shell:
-			found = item_split_bank[2].find(idxn)
-			if found>=0:
-				temp_flag=1
-				break
-		for idxn in sort_lable_os:
-			found = item_split_bank[2].find(idxn)
-			if found>=0:
-				if idxn=='timers':
-					if found==0:
-						temp_flag=1
-						break
-				else:
-					temp_flag=1
-					break
-				
-		if (temp_flag==0):
-			if(array_flag[all_lines_sort.index(all_lines_sort_t)]==0):
-				module_size = module_size + int(item_split_bank[0],16)
-				total_size += int(item_split_bank[0],16)
-				stest = str(int(item_split_bank[0],16))
-				print >> file_result, item_split_bank[0] + "\t\t\t" + stest + "\t\t\t" + item_split_bank[2]
-				array_flag[all_lines_sort.index(all_lines_sort_t)]=1
+    file_sort_temp_r = open('sort_temp_file.map', 'r')
+    all_lines_sort = file_sort_temp_r.readlines()
 
-	if module_size!=0:
-		print >> file_result, "\n" + "total:"
-		print >> file_result, str(hex(module_size)) + "\t\t\t" + str(module_size) + '\n'		
-		print >> file_result, "================================================================="
+    array_flag = [0 for i in range(len(all_lines_sort))]
 
-	file_sort_temp_r.close()
-	
-	module_size=0
-	if module_size!=0:
-		print >> file_result, "================================================================="
-	print >> file_result, "\n" + "Image size:"
-	print >> file_result, str(hex(total_size)) + "\t\t\t" + str(total_size) + '\n'	
-	
-	file_result.close()
-	file.close()
-	
-	return
+    temp_flag = 0
+
+    print("=================================================================", file=file_result)
+    module_size = 0
+    for all_lines_sort_t in all_lines_sort:
+        item = list(filter(None, all_lines_sort_t.strip().split(' ')))
+        num = len(item)
+
+        line_strip = (all_lines_sort_t.strip())
+        item_split_bank = line_strip.split(' ')
+        temp_flag = 0
+        for idxn in sort_lable_wifi:
+            found = item_split_bank[2].find(idxn)
+            if found >= 0:
+                temp_flag = 1
+                break
+        if (temp_flag == 1):
+            if (array_flag[all_lines_sort.index(all_lines_sort_t)] == 0):
+                module_size = module_size + int(item_split_bank[0], 16)
+                total_size += int(item_split_bank[0], 16)
+                stest = str(int(item_split_bank[0], 16))
+                print(item_split_bank[0] + "\t\t\t" + stest + "\t\t\t" + item_split_bank[2], file=file_result)
+                array_flag[all_lines_sort.index(all_lines_sort_t)] = 1
+    if module_size != 0:
+        print("\n" + "total:", file=file_result)
+        print(str(hex(module_size)) + "\t\t\t" + str(module_size) + '\n', file=file_result)
+        print("=================================================================", file=file_result)
+    file_sort_temp_r.close()
+
+    file_sort_temp_r = open('sort_temp_file.map', 'r')
+    all_lines_sort = file_sort_temp_r.readlines()
+    module_size = 0
+    for all_lines_sort_t in all_lines_sort:
+        item = list(filter(None, all_lines_sort_t.strip().split(' ')))
+        num = len(item)
+
+        line_strip = (all_lines_sort_t.strip())
+        item_split_bank = line_strip.split(' ')
+
+        temp_flag = 0
+        for idxn in sort_lable_per:
+            found = item_split_bank[2].find(idxn)
+            if found >= 0:
+                temp_flag = 1
+                break
+        if (temp_flag == 1):
+            if (array_flag[all_lines_sort.index(all_lines_sort_t)] == 0):
+                module_size = module_size + int(item_split_bank[0], 16)
+                total_size += int(item_split_bank[0], 16)
+                stest = str(int(item_split_bank[0], 16))
+                print(item_split_bank[0] + "\t\t\t" + stest + "\t\t\t" + item_split_bank[2], file=file_result)
+                array_flag[all_lines_sort.index(all_lines_sort_t)] = 1
+    if module_size != 0:
+        print("\n" + "total:", file=file_result)
+        print(str(hex(module_size)) + "\t\t\t" + str(module_size) + '\n', file=file_result)
+        print("=================================================================", file=file_result)
+
+    file_sort_temp_r.close()
+
+    file_sort_temp_r = open('sort_temp_file.map', 'r')
+    all_lines_sort = file_sort_temp_r.readlines()
+    module_size = 0
+    for all_lines_sort_t in all_lines_sort:
+        item = list(filter(None, all_lines_sort_t.strip().split(' ')))
+        num = len(item)
+
+        line_strip = (all_lines_sort_t.strip())
+        item_split_bank = line_strip.split(' ')
+
+        temp_flag = 0
+        for idxn in sort_lable_shell:
+            found = item_split_bank[2].find(idxn)
+            if found >= 0:
+                temp_flag = 1
+                break
+        if (temp_flag == 1):
+            if (array_flag[all_lines_sort.index(all_lines_sort_t)] == 0):
+                module_size = module_size + int(item_split_bank[0], 16)
+                total_size += int(item_split_bank[0], 16)
+                stest = str(int(item_split_bank[0], 16))
+                print(item_split_bank[0] + "\t\t\t" + stest + "\t\t\t" + item_split_bank[2], file=file_result)
+                array_flag[all_lines_sort.index(all_lines_sort_t)] = 1
+    if module_size != 0:
+        print("\n" + "total:", file=file_result)
+        print(str(hex(module_size)) + "\t\t\t" + str(module_size) + '\n', file=file_result)
+        print("=================================================================", file=file_result)
+
+    file_sort_temp_r.close()
+
+    file_sort_temp_r = open('sort_temp_file.map', 'r')
+    all_lines_sort = file_sort_temp_r.readlines()
+    module_size = 0
+    for all_lines_sort_t in all_lines_sort:
+        item = list(filter(None, all_lines_sort_t.strip().split(' ')))
+        num = len(item)
+
+        line_strip = (all_lines_sort_t.strip())
+        item_split_bank = line_strip.split(' ')
+
+        temp_flag = 0
+        for idxn in sort_lable_os:
+            found = item_split_bank[2].find(idxn)
+            if found >= 0:
+                if idxn == 'timers':
+                    if found == 0:
+                        temp_flag = 1
+                        break
+                else:
+                    temp_flag = 1
+                    break
+        if (temp_flag == 1):
+            if (array_flag[all_lines_sort.index(all_lines_sort_t)] == 0):
+                module_size = module_size + int(item_split_bank[0], 16)
+                total_size += int(item_split_bank[0], 16)
+                stest = str(int(item_split_bank[0], 16))
+                print(item_split_bank[0] + "\t\t\t" + stest + "\t\t\t" + item_split_bank[2], file=file_result)
+                array_flag[all_lines_sort.index(all_lines_sort_t)] = 1
+    if module_size != 0:
+        print("\n" + "total:", file=file_result)
+        print(str(hex(module_size)) + "\t\t\t" + str(module_size) + '\n', file=file_result)
+        print("=================================================================", file=file_result)
+
+    file_sort_temp_r.close()
+
+    file_sort_temp_r = open('sort_temp_file.map', 'r')
+    all_lines_sort = file_sort_temp_r.readlines()
+    module_size = 0
+    for all_lines_sort_t in all_lines_sort:
+        item = list(filter(None, all_lines_sort_t.strip().split(' ')))
+        num = len(item)
+
+        line_strip = (all_lines_sort_t.strip())
+        item_split_bank = line_strip.split(' ')
+
+        temp_flag = 0
+        for idxn in sort_lable_per:
+            found = item_split_bank[2].find(idxn)
+            if found >= 0:
+                temp_flag = 1
+                break
+        for idxn in sort_lable_wifi:
+            found = item_split_bank[2].find(idxn)
+            if found >= 0:
+                temp_flag = 1
+                break
+
+        for idxn in sort_lable_shell:
+            found = item_split_bank[2].find(idxn)
+            if found >= 0:
+                temp_flag = 1
+                break
+        for idxn in sort_lable_os:
+            found = item_split_bank[2].find(idxn)
+            if found >= 0:
+                if idxn == 'timers':
+                    if found == 0:
+                        temp_flag = 1
+                        break
+                else:
+                    temp_flag = 1
+                    break
+
+        if (temp_flag == 0):
+            if (array_flag[all_lines_sort.index(all_lines_sort_t)] == 0):
+                module_size = module_size + int(item_split_bank[0], 16)
+                total_size += int(item_split_bank[0], 16)
+                stest = str(int(item_split_bank[0], 16))
+                print(item_split_bank[0] + "\t\t\t" + stest + "\t\t\t" + item_split_bank[2], file=file_result)
+                array_flag[all_lines_sort.index(all_lines_sort_t)] = 1
+
+    if module_size != 0:
+        print("\n" + "total:", file=file_result)
+        print(str(hex(module_size)) + "\t\t\t" + str(module_size) + '\n', file=file_result)
+        print("=================================================================", file=file_result)
+
+    file_sort_temp_r.close()
+
+    module_size = 0
+    if module_size != 0:
+        print("=================================================================", file=file_result)
+    print("\n" + "Image size:", file=file_result)
+    print(str(hex(total_size)) + "\t\t\t" + str(total_size) + '\n', file=file_result)
+
+    file_result.close()
+    file.close()
+
+    return
 	
 if os.path.exists('image/text_image2_ns.map'):
 	obj_list_gen()
