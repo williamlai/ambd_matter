@@ -20,3 +20,5 @@ tools/bluetooth/DebugAnalyzer/*.trace
 
 tools/AmebaD/Image_Tool_Linux/*.bin
 tools/AmebaD/Image_Tool_Linux/*.txt
+
+project/realtek_amebaD_va0_example/GCC-RELEASE/project_hp/asdk/make/application/aws_iotshd/build/

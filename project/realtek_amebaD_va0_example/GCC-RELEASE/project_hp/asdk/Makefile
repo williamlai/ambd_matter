@@ -169,6 +169,9 @@ ifeq ($(CONFIG_EMWIN_EN),y)
 LINK_APP_LIB += $(BASEDIR)/component/common/ui/emwin/emWinLibrary/lib/rtl8721d/lib_emwin.a
 endif
 
+# AWS IoT Smart Home Main
+LINK_APP_LIB += $(ROOTDIR)/lib/application/libiotshd_main.a
+
 #matter lib
 ifeq ($(CONFIG_MATTER_EN), y)
 # --whole-archive forces linker to override weak functions with strong ones

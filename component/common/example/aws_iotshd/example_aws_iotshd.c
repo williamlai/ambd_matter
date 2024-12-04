@@ -25,7 +25,7 @@ static void aws_iotshd_thread(void *param)
 
     sntp_init();
 
-    intshd_main();
+    aws_iotshd_main();
 
     vTaskDelete(NULL);
 }
